@@ -1,0 +1,6 @@
+.env
+tests.py
+.flaskenv
+.idea
+.vscode
+__pycache__

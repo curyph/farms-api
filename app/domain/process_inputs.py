@@ -1,4 +1,3 @@
-from operator import ipow
 from fiona.io import ZipMemoryFile
 import geopandas as gpd
 from app.domain.connections import SqlAlchemyEngine
@@ -24,6 +23,6 @@ class HandleUserInput():
                 print(gdf.head())
         
         engine = SqlAlchemyEngine.gpd_connect()
-        gdf.to_postgis("farms_list", engine, if_exists='append')
+        gdf.to_postgis("farm_areas", engine, if_exists='append')
 
 

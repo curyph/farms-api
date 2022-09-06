@@ -1,8 +1,8 @@
 from flask_restful import Api
-from app import resources
-import geopandas as gpd
+
 
 def create_api(web_app):
+    from app import resources
     api = Api(web_app)
 
     # @web_app.route('/')
@@ -22,3 +22,4 @@ def create_api(web_app):
     api.add_resource(resources.HomeResource, '/api/home')
     api.add_resource(resources.SentinelResource, '/api/sentinel')
     api.add_resource(resources.FarmUploadResource, '/api/save-farm')
+    api.add_resource(resources.ListFarmGeometryResource, '/api/farms/<int:farm_id>')

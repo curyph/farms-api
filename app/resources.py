@@ -21,10 +21,14 @@ class SentinelResource(Resource):
 class FarmUploadResource(Resource):    
     
     def post(self):
-        file = request.files['files[]']
-        user_input = HandleUserInput(file)
-        user_input.save_file_to_db()
-        return 
+        try:
+            file = request.files['files[]']
+            user_input = HandleUserInput(file)
+            user_input.process_file()
+            return {'message': 'File uploaded Successfully'}
+        except Exception as ex:
+            return {'message': str(ex)}
+         
 
 class ListFarmGeometryResource(Resource):
     # Adicionar customer_id futuramente

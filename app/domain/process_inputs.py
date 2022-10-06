@@ -1,7 +1,7 @@
 from fiona.io import ZipMemoryFile
 import geopandas as gpd
 from app.domain.connections import SqlAlchemyEngine
-from app.models.areas import FarmAreaModel
+from app.models.areas import FarmAreaModel, FarmProtectedReserve
 from shapely.geometry.multipolygon import MultiPolygon
 from shapely import wkt
 from app.infrastructure.databases import db
@@ -27,15 +27,33 @@ class HandleUserInput():
         processed_gdf = self.gdf.copy()
         processed_gdf = processed_gdf[['geometry']]
         epsg = processed_gdf.crs.to_epsg()
-        for geom_raw in processed_gdf.geometry:   
-            area = geom_raw.area/10000
-            if geom_raw.geom_type == 'Polygon':
-                polygon_geometry = wkt.loads(str(geom_raw))
-                geom_raw = MultiPolygon([polygon_geometry])
-            farm_area = FarmAreaModel(nome_fazenda=self.filename, area=area, geometry=WKTElement(geom_raw, epsg))
-            db.session.add(farm_area)
-            db.session.commit()
-            
+        areas = []
+        for geom in processed_gdf.geometry:
+            area = geom.area/10000
+            if geom.geom_type == 'Polygon':
+                polygon_geometry = wkt.loads(str(geom))
+                geom = MultiPolygon([polygon_geometry])   
+            farm_area = FarmAreaModel(nome_fazenda=self.filename, area=area, geometry=WKTElement(geom, epsg))   
+        db.session.add(farm_area)
+        db.session.commit()   
+        areas.append({'id': farm_area.id, 'geom': geom})
+        self.create_intersections(areas)
+
+    def create_intersections(self, areas):
+        sql = "SELECT geom FROM reserves"        
+        engine = SqlAlchemyEngine.gpd_connect()
+        reserves = gpd.read_postgis(sql, engine)        
+        for area in areas:
+            df1 = gpd.GeoDataFrame({'geometry': area['geom']})
+            intersection = gpd.overlay(df1, reserves, how='intersection', keep_geom_type=True)
+            for geom in intersection.geometry:
+                area_ha = geom.area/10000
+                if geom.geom_type == 'Polygon':
+                    polygon_geometry = wkt.loads(str(geom))
+                    geom = MultiPolygon([polygon_geometry])      
+                farm_reserve = FarmProtectedReserve(farm_id=area['id'], area=area_ha, area_type='APP', geometry=WKTElement(geom, 3857))
+                db.session.add(farm_reserve)
+                db.session.commit()     
 
     #engine = SqlAlchemyEngine.gpd_connect()
     #gdf.to_postgis("farm_areas", engine, if_exists='append')

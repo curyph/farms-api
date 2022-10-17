@@ -37,3 +37,12 @@ class ListFarmGeometryResource(Resource):
         if area:            
             return area.as_json()
         return {'Message': 'area not found'}
+
+
+class ListFarmReservesResource(Resource):
+    def get(self, farm_id):
+        area = areas.FarmReserveModel.find_by_id(farm_id)    
+        if area:
+            print(area)
+            return area
+        return {'Message': 'area not found'}

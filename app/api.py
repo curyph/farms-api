@@ -23,3 +23,4 @@ def create_api(web_app):
     api.add_resource(resources.SentinelResource, '/api/sentinel')
     api.add_resource(resources.FarmUploadResource, '/api/save-farm')
     api.add_resource(resources.ListFarmGeometryResource, '/api/farms/<int:farm_id>')
+    api.add_resource(resources.ListFarmReservesResource, '/api/farms/<int:farm_id>/reserves')

@@ -11,7 +11,7 @@ class FarmAreaModel(db.Model):
     geometry = db.Column(Geometry('MULTIPOLYGON', 3857))
 
 
-    farm_protected_reserve = db.relationship('FarmProtectedReserve', backref='farm_protected')
+    farm_protected_reserve = db.relationship('FarmReserveModel', backref='farm_protected')
     pol = db.column_property(func.ST_AsText(geometry))
 
     def __repr__(self):
@@ -30,7 +30,7 @@ class FarmAreaModel(db.Model):
         return cls.query.filter_by(id=farm_id).first()
 
 
-class FarmProtectedReserve(db.Model):
+class FarmReserveModel(db.Model):
     __tablename__ = 'farm_reserves'
 
     fpr_id = db.Column(db.Integer, primary_key=True)
@@ -39,7 +39,16 @@ class FarmProtectedReserve(db.Model):
     area_type = db.Column(db.String(20))
     geometry = db.Column(Geometry('MULTIPOLYGON', 3857))
 
+    pol = db.column_property(func.ST_AsText(geometry))
 
+    def as_json(self):
+        return {'fpr_id': self.fpr_id, 'farm_id': self.farm_id, 'area': self.area, 'area_type': self.area_type, 'geometry': self.pol}
 
-
+    @classmethod
+    def find_by_id(cls, farm_id):        
+        reserve_list = []
+        areas = cls.query.filter_by(farm_id=farm_id).all()
+        for area in areas:
+            reserve_list.append(area.as_json())
+        return reserve_list
 

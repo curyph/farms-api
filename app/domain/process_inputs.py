@@ -1,7 +1,7 @@
 from fiona.io import ZipMemoryFile
 import geopandas as gpd
 from app.domain.connections import SqlAlchemyEngine
-from app.models.areas import FarmAreaModel, FarmProtectedReserve
+from app.models.areas import FarmAreaModel, FarmReserveModel
 from shapely.geometry.multipolygon import MultiPolygon
 from shapely import wkt
 from app.infrastructure.databases import db
@@ -40,9 +40,9 @@ class HandleUserInput():
         self.create_intersections(areas)
 
     def create_intersections(self, areas):
-        sql = "SELECT geom FROM reserves"        
+        sql = "SELECT geometry FROM reserves"        
         engine = SqlAlchemyEngine.gpd_connect()
-        reserves = gpd.read_postgis(sql, engine)        
+        reserves = gpd.read_postgis(sql, engine, geom_col='geometry')        
         for area in areas:
             df1 = gpd.GeoDataFrame({'geometry': area['geom']})
             intersection = gpd.overlay(df1, reserves, how='intersection', keep_geom_type=True)
@@ -51,7 +51,7 @@ class HandleUserInput():
                 if geom.geom_type == 'Polygon':
                     polygon_geometry = wkt.loads(str(geom))
                     geom = MultiPolygon([polygon_geometry])      
-                farm_reserve = FarmProtectedReserve(farm_id=area['id'], area=area_ha, area_type='APP', geometry=WKTElement(geom, 3857))
+                farm_reserve = FarmReserveModel(farm_id=area['id'], area=area_ha, area_type='APP', geometry=WKTElement(geom, 3857))
                 db.session.add(farm_reserve)
                 db.session.commit()     
 

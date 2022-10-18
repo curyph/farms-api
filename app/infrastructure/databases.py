@@ -9,4 +9,5 @@ def register_orm(web_app):
 
 def register_migrations():   
     import app.models.areas
+    import app.models.general_info
     db.create_all()

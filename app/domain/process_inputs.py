@@ -2,6 +2,7 @@ from fiona.io import ZipMemoryFile
 import geopandas as gpd
 from app.domain.connections import SqlAlchemyEngine
 from app.models.areas import FarmAreaModel, FarmReserveModel
+from app.models.general_info import CitiesModel, StatesModel
 from shapely.geometry.multipolygon import MultiPolygon
 from shapely import wkt
 from app.infrastructure.databases import db
@@ -33,10 +34,10 @@ class HandleUserInput():
             if geom.geom_type == 'Polygon':
                 polygon_geometry = wkt.loads(str(geom))
                 geom = MultiPolygon([polygon_geometry])   
-            farm_area = FarmAreaModel(nome_fazenda=self.filename, area=area, geometry=WKTElement(geom, epsg))   
+            farm_area = FarmAreaModel(nome_fazenda=self.filename, area=area, geometry=WKTElement(geom, epsg), state_id=1, city_id=1)   
         db.session.add(farm_area)
         db.session.commit()   
-        areas.append({'id': farm_area.id, 'geom': geom})
+        areas.append({'id': farm_area.farm_id, 'geom': geom})
         self.create_intersections(areas)
 
     def create_intersections(self, areas):

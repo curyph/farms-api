@@ -2,7 +2,7 @@ from flask_restful import Resource
 from app.collections.download_sentinel_hub import SentinelImages
 from flask import request
 from app.domain.process_inputs import HandleUserInput
-from app.models import areas
+from app.models import areas, general_info
 
 class InitResource(Resource):
     def get(self):
@@ -42,7 +42,20 @@ class ListFarmGeometryResource(Resource):
 class ListFarmReservesResource(Resource):
     def get(self, farm_id):
         area = areas.FarmReserveModel.find_by_id(farm_id)    
-        if area:
-            print(area)
+        if area:            
             return area
         return {'Message': 'area not found'}
+
+class ListStates(Resource):
+    def get(self):
+        states = general_info.StatesModel.list_all()       
+        if states:
+            return states
+        return {'message': 'No states found'}
+
+
+class ListCities(Resource):
+    def get(self, state_id):
+        cities = general_info.CitiesModel.list_cities_by_state(state_id)
+        print(cities)
+        return cities

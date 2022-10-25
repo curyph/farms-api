@@ -23,19 +23,21 @@ class FarmUploadResource(Resource):
     def post(self):
         try:
             file = request.files['files[]']
-            user_input = HandleUserInput(file)
+            state_id = request.args['state_id']
+            city_id = request.args['city_id']            
+            user_input = HandleUserInput(file, state_id, city_id)
             user_input.process_file()
             return {'message': 'File uploaded Successfully'}
-        except Exception as ex:
+        except Exception as ex:            
             return {'message': str(ex)}
          
 
 class ListFarmGeometryResource(Resource):
     # Adicionar customer_id futuramente
-    def get(self, farm_id):
-        area = areas.FarmAreaModel.find_by_id(farm_id)
+    def get(self, state_id, city_id):
+        area = areas.FarmAreaModel.find_by_id(state_id, city_id)
         if area:            
-            return area.as_json()
+            return area
         return {'Message': 'area not found'}
 
 
@@ -57,5 +59,4 @@ class ListStates(Resource):
 class ListCities(Resource):
     def get(self, state_id):
         cities = general_info.CitiesModel.list_cities_by_state(state_id)
-        print(cities)
         return cities

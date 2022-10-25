@@ -11,10 +11,12 @@ from geoalchemy2 import WKTElement
 class HandleUserInput():    
     from app.models.areas import FarmAreaModel
     
-    def __init__(self, file):
+    def __init__(self, file, state_id, city_id):
         self.file = file
         self.gdf = None
         self.filename = ''    
+        self.state_id = state_id
+        self.city_id = city_id
 
     def process_file(self):          
         with ZipMemoryFile(self.file) as memfile:
@@ -34,9 +36,9 @@ class HandleUserInput():
             if geom.geom_type == 'Polygon':
                 polygon_geometry = wkt.loads(str(geom))
                 geom = MultiPolygon([polygon_geometry])   
-            farm_area = FarmAreaModel(nome_fazenda=self.filename, area=area, geometry=WKTElement(geom, epsg), state_id=1, city_id=1)   
-        db.session.add(farm_area)
-        db.session.commit()   
+            farm_area = FarmAreaModel(nome_fazenda=self.filename, area=area, geometry=WKTElement(geom, epsg), state_id=self.state_id, city_id=self.city_id)   
+            db.session.add(farm_area)
+            db.session.commit()   
         areas.append({'id': farm_area.farm_id, 'geom': geom})
         self.create_intersections(areas)
 

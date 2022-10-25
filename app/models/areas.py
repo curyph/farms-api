@@ -24,12 +24,14 @@ class FarmAreaModel(db.Model):
         return {'id': self.farm_id, 'nome_fazenda': self.nome_fazenda, 'area': self.area, 'geometry': self.pol}
 
     @classmethod
-    def find_by_id(cls, farm_id):
-        #wkt_geom = db.session.query(functions.ST_AsText(FarmAreaModel.geometry))
-        print(FarmAreaModel.geometry)
-        #print(wkt_geom)
-        #return db.session.query(functions.ST_AsText(cls.geometry))        
-        return cls.query.filter_by(farm_id=farm_id).first()
+    def find_by_id(cls, state_id, city_id):
+        #wkt_geom = db.session.query(functions.ST_AsText(FarmAreaModel.geometry))               
+        #return db.session.query(functions.ST_AsText(cls.geometry)) 
+        areas_list = []
+        areas = cls.query.filter_by(state_id=state_id, city_id=city_id).all()
+        for area in areas:
+            areas_list.append(area.as_json())
+        return areas_list
 
 
 class FarmReserveModel(db.Model):

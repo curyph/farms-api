@@ -1,6 +1,16 @@
 from app.infrastructure.databases import db
 from geoalchemy2 import Geometry, functions
 from sqlalchemy import func
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
+
+# PedologyTeste = db.Table('PedologyTeste',    
+#     db.Column('id', db.Integer, primary_key=True),
+#     db.Column('farm_id', db.Integer, db.ForeignKey('farm_areas.farm_id')),
+#     db.Column('ped_id', db.Integer, db.ForeignKey('pedology.ped_id'))
+# )   
+
 
 class FarmAreaModel(db.Model):    
     __tablename__ = 'farm_areas'
@@ -12,8 +22,10 @@ class FarmAreaModel(db.Model):
     city_id = db.Column(db.Integer, db.ForeignKey('cities.city_id'))
     geometry = db.Column(Geometry('MULTIPOLYGON', 3857))
 
-
     farm_protected_reserve = db.relationship('FarmReserveModel', backref='farm_protected')
+    reserves = db.relationship('ReservesModel', primaryjoin='func.ST_intersects(foreign(FarmAreaModel.geometry), ReservesModel.geometry).as_comparison(1, 2)', backref='reserves', viewonly=True, uselist=True)
+    #pedology = db.relationship('PedologyModel', secondary=PedologyTeste, backref='FarmAreaModel')
+
     pol = db.column_property(func.ST_AsText(geometry))
 
     def __repr__(self):
@@ -21,7 +33,7 @@ class FarmAreaModel(db.Model):
 
     def as_json(self):
         #pol = db.column_property(func.ST_AsGeoJSON(self.geometry))
-        return {'id': self.farm_id, 'nome_fazenda': self.nome_fazenda, 'area': self.area, 'geometry': self.pol}
+        return {'id': self.farm_id, 'nome_fazenda': self.nome_fazenda, 'area': self.area, 'geometry': self.pol, 'reserves': [reserve.pol for reserve in self.reserves]}
 
     @classmethod
     def find_by_id(cls, state_id, city_id):
@@ -56,3 +68,45 @@ class FarmReserveModel(db.Model):
             reserve_list.append(area.as_json())
         return reserve_list
 
+
+class ReservesModel(db.Model):
+    __tablename__ = 'reserves'
+
+    res_id = db.Column(db.Integer, primary_key=True)
+    reserve_type = db.Column(db.String(100))
+    geometry = db.Column(Geometry('MULTIPOLYGON', 3857))
+
+    pol = db.column_property(func.ST_AsText(geometry))
+
+
+class PedologyModel(db.Model):
+    __tablename__ = 'pedology'
+
+    ped_id = db.Column(db.Integer, primary_key=True)
+    cod_symbol = db.Column(db.String(10))
+    legend = db.Column(db.String(100))
+    order = db.Column(db.String(25))
+    suborder = db.Column(db.String(25))
+    color_pattern = db.Column(db.String(10))
+    geometry = db.Column(Geometry('MULTIPOLYGON', 3857))
+
+    geom = db.column_property(func.ST_AsText(geometry))
+
+    farm_pedology = db.relationship('FarmPedologyModel', backref='farm_pedology')
+
+    #farm_pedology_new = db.relationship('FarmAreaModel', secondary=PedologyTeste, backref='PedologyModel')
+
+
+class FarmPedologyModel(db.Model):
+    __tablename__ = 'farm_pedology'
+
+    farm_ped_id = db.Column(db.Integer, primary_key=True)
+    ped_id = db.Column(db.Integer, db.ForeignKey('pedology.ped_id'))
+    cod_symbol = db.Column(db.String(10))
+    legend = db.Column(db.String(100))
+    order = db.Column(db.String(25))
+    suborder = db.Column(db.String(25))
+    color_pattern = db.Column(db.String(10))
+    geometry = db.Column(Geometry('MULTIPOLYGON', 3857))
+
+    geom = db.column_property(func.ST_AsText(geometry))

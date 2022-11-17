@@ -34,11 +34,16 @@ class FarmUploadResource(Resource):
 
 class ListFarmGeometryResource(Resource):
     # Adicionar customer_id futuramente
-    def get(self, state_id, city_id):
-        area = areas.FarmAreaModel.find_by_id(state_id, city_id)
-        if area:            
-            return area
-        return {'Message': 'area not found'}
+    def get(self):
+        print(request.args)
+        dct = {arg: value for (arg, value) in request.args.items() if value != 'undefined'}
+
+        print(dct)
+
+        #area = areas.FarmAreaModel.find_by_id(state_id, city_id)
+        # if area:            
+        #     return area
+        # return {'Message': 'area not found'}
 
 
 class ListFarmReservesResource(Resource):

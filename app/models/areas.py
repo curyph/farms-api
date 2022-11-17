@@ -5,13 +5,6 @@ from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
-# PedologyTeste = db.Table('PedologyTeste',    
-#     db.Column('id', db.Integer, primary_key=True),
-#     db.Column('farm_id', db.Integer, db.ForeignKey('farm_areas.farm_id')),
-#     db.Column('ped_id', db.Integer, db.ForeignKey('pedology.ped_id'))
-# )   
-
-
 class FarmAreaModel(db.Model):    
     __tablename__ = 'farm_areas'
 
@@ -22,9 +15,9 @@ class FarmAreaModel(db.Model):
     city_id = db.Column(db.Integer, db.ForeignKey('cities.city_id'))
     geometry = db.Column(Geometry('MULTIPOLYGON', 3857))
 
-    farm_protected_reserve = db.relationship('FarmReserveModel', backref='farm_protected')
-    reserves = db.relationship('ReservesModel', primaryjoin='func.ST_intersects(foreign(FarmAreaModel.geometry), ReservesModel.geometry).as_comparison(1, 2)', backref='reserves', viewonly=True, uselist=True)
-    #pedology = db.relationship('PedologyModel', secondary=PedologyTeste, backref='FarmAreaModel')
+    farm_protected_reserve = db.relationship('FarmReserveModel', backref='farm_areas')
+    #reserves = db.relationship('ReservesModel', primaryjoin='func.ST_intersects(foreign(FarmAreaModel.geometry), ReservesModel.geometry).as_comparison(1, 2)', backref='reserves', viewonly=True, uselist=True)
+    farm_pedology = db.relationship('FarmPedologyModel', backref='farm_areas')
 
     pol = db.column_property(func.ST_AsText(geometry))
 
@@ -88,11 +81,11 @@ class PedologyModel(db.Model):
     order = db.Column(db.String(25))
     suborder = db.Column(db.String(25))
     color_pattern = db.Column(db.String(10))
-    geometry = db.Column(Geometry('MULTIPOLYGON', 3857))
+    geometry = db.Column(Geometry('POLYGON', 3857))
 
     geom = db.column_property(func.ST_AsText(geometry))
 
-    farm_pedology = db.relationship('FarmPedologyModel', backref='farm_pedology')
+    farm_pedology = db.relationship('FarmPedologyModel', backref='pedology')
 
     #farm_pedology_new = db.relationship('FarmAreaModel', secondary=PedologyTeste, backref='PedologyModel')
 
@@ -102,6 +95,7 @@ class FarmPedologyModel(db.Model):
 
     farm_ped_id = db.Column(db.Integer, primary_key=True)
     ped_id = db.Column(db.Integer, db.ForeignKey('pedology.ped_id'))
+    farm_id = db.Column(db.Integer, db.ForeignKey('farm_areas.farm_id'))
     cod_symbol = db.Column(db.String(10))
     legend = db.Column(db.String(100))
     order = db.Column(db.String(25))

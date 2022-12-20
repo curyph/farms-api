@@ -16,7 +16,7 @@ class FarmAreaModel(db.Model):
     geometry = db.Column(Geometry('MULTIPOLYGON', 3857))
 
     farm_protected_reserve = db.relationship('FarmReserveModel', backref='farm_areas')
-    #reserves = db.relationship('ReservesModel', primaryjoin='func.ST_intersects(foreign(FarmAreaModel.geometry), ReservesModel.geometry).as_comparison(1, 2)', backref='reserves', viewonly=True, uselist=True)
+    reserves = db.relationship('ReservesModel', primaryjoin='func.ST_intersects(foreign(FarmAreaModel.geometry), ReservesModel.geometry).as_comparison(1, 2)', backref='reserves', viewonly=True, uselist=True)
     farm_pedology = db.relationship('FarmPedologyModel', backref='farm_areas')
 
     pol = db.column_property(func.ST_AsText(geometry))

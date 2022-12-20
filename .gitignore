@@ -4,3 +4,5 @@ tests.py
 .idea
 .vscode
 __pycache__
+
+tests/

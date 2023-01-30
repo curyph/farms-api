@@ -7,7 +7,8 @@ def register_orm(web_app):
     global db 
     db = SQLAlchemy(web_app)
 
-def register_migrations():   
+def register_migrations(web_app):   
     import app.models.areas
     import app.models.general_info
-    db.create_all()
+    with web_app.app_context():
+        db.create_all()

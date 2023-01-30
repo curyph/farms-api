@@ -7,7 +7,7 @@ def create_api(web_app):
 
     api.add_resource(resources.InitResource, '/api/init')
     api.add_resource(resources.HomeResource, '/api/home')
-    api.add_resource(resources.SentinelResource, '/api/sentinel')
+    # api.add_resource(resources.SentinelResource, '/api/sentinel')
     api.add_resource(resources.FarmUploadResource, '/api/save-farm')
     api.add_resource(resources.ListFarmGeometryResource, '/api/farms/states/<int:state_id>/cities/<int:city_id>')
     api.add_resource(resources.ListFarmReservesResource, '/api/farms/<int:farm_id>/reserves')
